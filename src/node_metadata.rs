@@ -312,14 +312,14 @@ impl StorageMetadata {
             _ => Err(MetadataError::StorageTypeError),
         }
     }
-    pub fn get_map<K: Encode, V: Decode + Clone>(&self) -> Result<StorageMap<K, V>, MetadataError> {
+    pub fn get_map<K: Encode, V: Decode + Clone>(&self) -> Result<StorageMap<K>, MetadataError> {
         match &self.ty {
             StorageEntryType::Map { hasher, .. } => {
                 let module_prefix = self.module_prefix.as_bytes().to_vec();
                 let storage_prefix = self.storage_prefix.as_bytes().to_vec();
                 let hasher = hasher.to_owned();
-                let default = Decode::decode(&mut &self.default[..])
-                    .map_err(|_| MetadataError::MapValueTypeError)?;
+                // let default = Decode::decode(&mut &self.default[..])
+                //     .map_err(|_| MetadataError::MapValueTypeError)?;
 
                 info!(
                     "map for '{}' '{}' has hasher {:?}",
@@ -330,7 +330,7 @@ impl StorageMetadata {
                     module_prefix,
                     storage_prefix,
                     hasher,
-                    default,
+                    // default,
                 })
             }
             _ => Err(MetadataError::StorageTypeError),
@@ -377,15 +377,15 @@ impl StorageValue {
 }
 
 #[derive(Clone, Debug)]
-pub struct StorageMap<K, V> {
+pub struct StorageMap<K> {
     _marker: PhantomData<K>,
     module_prefix: Vec<u8>,
     storage_prefix: Vec<u8>,
     hasher: StorageHasher,
-    default: V,
+    // default: V,
 }
 
-impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
+impl<K: Encode> StorageMap<K> {
     pub fn key(&self, key: K) -> StorageKey {
         let mut bytes = sp_core::twox_128(&self.module_prefix).to_vec();
         bytes.extend(&sp_core::twox_128(&self.storage_prefix)[..]);
@@ -393,9 +393,9 @@ impl<K: Encode, V: Decode + Clone> StorageMap<K, V> {
         StorageKey(bytes)
     }
 
-    pub fn default(&self) -> V {
-        self.default.clone()
-    }
+    // pub fn default(&self) -> V {
+    //     self.default.clone()
+    // }
 }
 
 #[derive(Clone, Debug)]
